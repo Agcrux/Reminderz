@@ -8,7 +8,7 @@ function localDate() {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-export function CreateEvent() {
+export function CreateEvent({ emailReady }: { emailReady: boolean }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(localDate);
   const [organizerName, setOrganizerName] = useState("");
@@ -44,6 +44,7 @@ export function CreateEvent() {
   }
 
   return <form className="stack-form" onSubmit={submit}>
+    {!emailReady && <p className="setup-notice" role="status">Email setup is in progress. You can explore the form; event creation will open when delivery is ready.</p>}
     <label>WHAT ARE WE PLANNING?<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Friday team catch-up" required maxLength={100} /></label>
     <label>WHAT DAY?<input type="date" value={date} min={localDate()} onChange={(e) => setDate(e.target.value)} required /></label>
     <div className="form-row"><label>YOUR NAME<input value={organizerName} onChange={(e) => setOrganizerName(e.target.value)} placeholder="Your name" required maxLength={80} /></label><label>YOUR EMAIL<input type="email" value={organizerEmail} onChange={(e) => setOrganizerEmail(e.target.value)} placeholder="you@example.com" required /></label></div>
@@ -51,7 +52,7 @@ export function CreateEvent() {
     <div className="mode-field"><span>HOW WOULD YOU LIKE TO MEET?</span><div className="mode-options"><button type="button" className={mode === "group" ? "mode-option active" : "mode-option"} onClick={() => setMode("group")}><strong>As a group</strong><small>One time for everyone</small></button><button type="button" className={mode === "individual" ? "mode-option active" : "mode-option"} onClick={() => setMode("individual")}><strong>Individually</strong><small>A time for each person</small></button></div></div>
     <div className="creator-slots"><div className="creator-slots-heading"><span>WHEN ARE YOU AVAILABLE?</span><small>{organizerSlots.length} selected</small></div><p>Guests will only see the times you choose. Times are in {timezone.replaceAll("_", " ")}.</p><div className="creator-slots-grid">{TIMES.map((time) => <button type="button" key={time} aria-pressed={organizerSlots.includes(time)} className={organizerSlots.includes(time) ? "mini-slot selected" : "mini-slot"} onClick={() => setOrganizerSlots((current) => current.includes(time) ? current.filter((slot) => slot !== time) : [...current, time].sort())}>{formatTime(time)}</button>)}</div></div>
     {error && <p className="form-error" role="alert">{error}</p>}
-    <button className="primary-button" disabled={busy || !organizerSlots.length}>{busy ? "Creating…" : "Create your event"}<span>↗</span></button>
+    <button className="primary-button" disabled={busy || !organizerSlots.length || !emailReady}>{busy ? "Creating…" : "Create your event"}<span>↗</span></button>
     <div className="form-footnote">No account needed. Just a good time.</div>
   </form>;
 }

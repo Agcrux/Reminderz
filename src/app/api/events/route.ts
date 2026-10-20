@@ -16,6 +16,9 @@ const createSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM) {
+      return Response.json({ error: "Email setup is still in progress. Please try again soon." }, { status: 503 });
+    }
     const parsed = createSchema.safeParse(await request.json());
     if (!parsed.success) return Response.json({ error: "Please check the event details." }, { status: 400 });
     const input = parsed.data;
