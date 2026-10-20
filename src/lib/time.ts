@@ -16,3 +16,37 @@ export function formatDate(value: string | Date) {
 export function isValidTime(value: string) {
   return TIMES.includes(value);
 }
+
+export function datePart(value: string | Date) {
+  return value instanceof Date ? value.toISOString().slice(0, 10) : value.slice(0, 10);
+}
+
+export function weekStart(value: string) {
+  const date = new Date(`${value}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
+  return date.toISOString().slice(0, 10);
+}
+
+export function weekDates(start: string) {
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(`${start}T12:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + index);
+    return date.toISOString().slice(0, 10);
+  });
+}
+
+export function makeSlot(date: string, time: string) { return `${date}|${time}`; }
+
+export function isValidSlot(slot: string, start: string | Date) {
+  const [date, time, extra] = slot.split("|");
+  return !extra && weekDates(datePart(start)).includes(date) && isValidTime(time);
+}
+
+export function formatSlot(slot: string) {
+  const [date, time] = slot.split("|");
+  return `${formatDate(date)} at ${formatTime(time)}`;
+}
+
+export function shortDay(date: string) {
+  return new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${date}T12:00:00Z`));
+}

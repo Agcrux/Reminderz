@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { db, getEvent } from "@/lib/db";
-import { isValidTime } from "@/lib/time";
+import { isValidSlot } from "@/lib/time";
 
 const availabilitySchema = z.object({
   name: z.string().trim().min(1).max(80),
   email: z.email().max(254),
-  slots: z.array(z.string()).min(1).max(48),
+  slots: z.array(z.string()).min(1).max(336),
   website: z.string().max(0).optional(),
 });
 
@@ -17,7 +17,7 @@ export async function POST(request: Request, context: RouteContext<"/api/events/
     if (!event) return Response.json({ error: "Event not found." }, { status: 404 });
     if (event.finalized_time) return Response.json({ error: "This event is already scheduled." }, { status: 409 });
     const parsed = availabilitySchema.safeParse(await request.json());
-    if (!parsed.success || parsed.data.slots.some((slot) => !isValidTime(slot) || !event.organizer_slots.includes(slot))) {
+    if (!parsed.success || parsed.data.slots.some((slot) => !isValidSlot(slot, event.event_date) || !event.organizer_slots.includes(slot))) {
       return Response.json({ error: "Enter your name, email, and at least one time." }, { status: 400 });
     }
     const input = parsed.data;

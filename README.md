@@ -1,6 +1,6 @@
 # Reminderz
 
-Group scheduling for one day. An organizer creates an event, selects their available half-hour slots, and shares a guest link. Guests enter their name, email, and choose from the organizer's slots. The organizer can choose one time for the group or schedule separate meetings with each guest. Resend emails the organizer and affected guests after each time is confirmed.
+Group scheduling for one specific Monday–Sunday week. An organizer creates an event, selects their available half-hour slots on each day, and shares a guest link. Guests enter their name, email, and choose from the organizer's slots. The organizer can choose one time for the group or schedule separate meetings with each guest. Resend emails the organizer and affected guests after each time is confirmed.
 
 ## Stack
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db, getEvent, getParticipants } from "@/lib/db";
 import { sendIndividualEmails } from "@/lib/email";
-import { isValidTime } from "@/lib/time";
+import { isValidSlot } from "@/lib/time";
 
 const meetingSchema = z.object({ token: z.string(), participantId: z.uuid(), time: z.string() });
 
@@ -9,9 +9,10 @@ export async function POST(request: Request, context: RouteContext<"/api/events/
   try {
     const { id } = await context.params;
     const parsed = meetingSchema.safeParse(await request.json());
-    if (!parsed.success || !isValidTime(parsed.data.time)) return Response.json({ error: "Choose a valid time." }, { status: 400 });
+    if (!parsed.success) return Response.json({ error: "Choose a valid time." }, { status: 400 });
     const event = await getEvent(id);
     if (!event || event.manage_token !== parsed.data.token) return Response.json({ error: "Organizer link not found." }, { status: 404 });
+    if (!isValidSlot(parsed.data.time, event.event_date)) return Response.json({ error: "Choose a valid time." }, { status: 400 });
     if (event.mode !== "individual") return Response.json({ error: "This is a group event." }, { status: 400 });
     if (!event.organizer_slots.includes(parsed.data.time)) return Response.json({ error: "Choose one of your available times." }, { status: 400 });
     const participants = await getParticipants(id);
