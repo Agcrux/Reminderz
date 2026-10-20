@@ -13,14 +13,14 @@ Supabase is not required. The private organizer link is a capability URL, so kee
 
 ## Setup
 
-1. Create a Neon Postgres database. Run [`schema.sql`](schema.sql) in its SQL editor.
+1. Create a Neon Postgres database. Set its connection string in `.env.local`, then run `npm run db:migrate` to apply [`schema.sql`](schema.sql).
 2. Verify a sending domain in Resend and create an API key.
 3. Copy `.env.example` to `.env.local` and fill in `DATABASE_URL`, `RESEND_API_KEY`, and `RESEND_FROM`.
 4. Run `npm install` and `npm run dev`.
 
 ## Vercel
 
-Import this repository into Vercel. Attach Neon from the Vercel Marketplace or set `DATABASE_URL` yourself. Set `RESEND_API_KEY` and `RESEND_FROM` in the project environment variables. Run `schema.sql` against the production database before sharing links. Deployments from the production branch then happen automatically through Vercel's Git integration.
+Import this repository into Vercel. Attach Neon from the Vercel Marketplace or set `DATABASE_URL` yourself. Set `RESEND_API_KEY` and `RESEND_FROM` in the project environment variables. Pull the production environment to `.env.local` and run `npm run db:migrate` before sharing links. Deployments from the production branch then happen automatically through Vercel's Git integration.
 
 ## Notes
 

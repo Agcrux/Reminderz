@@ -20,13 +20,16 @@ export async function POST(request: Request) {
     if (!parsed.success) return Response.json({ error: "Please check the event details." }, { status: 400 });
     const input = parsed.data;
     if (input.organizerSlots.some((slot) => !isValidTime(slot))) return Response.json({ error: "Choose valid available times." }, { status: 400 });
-    const day = new Date(`${input.date}T12:00:00Z`);
-    const now = new Date();
-    if (day.getTime() < Date.now() - 24 * 60 * 60 * 1000 || day.getTime() > now.getTime() + 366 * 24 * 60 * 60 * 1000) {
-      return Response.json({ error: "Choose a date within the next year." }, { status: 400 });
-    }
     try { new Intl.DateTimeFormat("en-US", { timeZone: input.timezone }); }
     catch { return Response.json({ error: "Choose a valid time zone." }, { status: 400 }); }
+    const day = new Date(`${input.date}T12:00:00Z`);
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: input.timezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
+    const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+    const today = `${value("year")}-${value("month")}-${value("day")}`;
+    if (input.date < today || day.getTime() > now.getTime() + 366 * 24 * 60 * 60 * 1000) {
+      return Response.json({ error: "Choose a date within the next year." }, { status: 400 });
+    }
 
     const id = randomBytes(9).toString("base64url");
     const token = randomBytes(32).toString("base64url");

@@ -8,8 +8,9 @@ export function formatTime(value: string) {
   return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${hour < 12 ? "AM" : "PM"}`;
 }
 
-export function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
+export function formatDate(value: string | Date) {
+  const day = value instanceof Date ? value.toISOString().slice(0, 10) : value.slice(0, 10);
+  return new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${day}T12:00:00Z`));
 }
 
 export function isValidTime(value: string) {

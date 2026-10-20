@@ -1,8 +1,9 @@
 import { CreateEvent } from "@/components/create-event";
+import Link from "next/link";
 
 export default function Home() {
   return <main className="site-shell">
-    <header className="topbar"><a className="brand" href="/"><span className="brand-icon">✳</span> reminderz<span className="brand-dot">.</span></a><span className="topbar-note">Scheduling, together.</span></header>
+    <header className="topbar"><Link className="brand" href="/"><span className="brand-icon">✳</span> reminderz<span className="brand-dot">.</span></Link><span className="topbar-note">Scheduling, together.</span></header>
     <section className="hero">
       <div className="hero-copy"><div className="eyebrow"><span className="eyebrow-line" /> THE EASIER WAY TO GET TOGETHER</div>
         <h1>One day.<br/><em>Everyone&apos;s</em><br/>availability.</h1>

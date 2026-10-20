@@ -3,7 +3,7 @@ import { neon } from "@neondatabase/serverless";
 export type Event = {
   id: string;
   title: string;
-  event_date: string;
+  event_date: string | Date;
   timezone: string;
   organizer_name: string;
   organizer_email: string;
