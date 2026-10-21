@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { formatSlot, formatTime, shortDay, shortSlot, weekDates } from "@/lib/time";
+import { formatDate, formatSlot, formatTime, shortDay, shortSlot, weekDates } from "@/lib/time";
 
 type Booked = { slot: string; meetingLink: string; emailSent: boolean };
 
@@ -26,15 +26,15 @@ export function BookingForm({ eventId, title, organizerName, timezone, week, ope
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not book this time."); }
     finally { setBusy(false); }
   }
-  if (booked) return <div className="submitted-state"><span className="success-mark">✓</span><h2>You&apos;re booked.</h2><p>{title} with {organizerName} is set for {formatSlot(booked.slot)} ({zone}).</p>
-    <a className="primary-button join-button" href={booked.meetingLink} target="_blank" rel="noopener noreferrer">Join on Zoom<span>↗</span></a>
-    <p className="form-footnote">{booked.emailSent ? `We emailed your invitation with this link to ${email}.` : "We couldn't email your invitation, so save this Zoom link."} Need a different time? Book again with the same email.</p></div>;
+  if (booked) return <div className="submitted-state"><span className="success-mark">✓</span><h2>You&apos;re booked</h2><p>{title} with {organizerName} on {formatSlot(booked.slot)} ({zone}).</p>
+    <a className="primary-button join-button" href={booked.meetingLink} target="_blank" rel="noopener noreferrer">Join Zoom meeting<span>↗</span></a>
+    <p className="form-footnote">{booked.emailSent ? `We emailed the details and Zoom link to ${email}.` : "We couldn't email you the details, so save the Zoom link above."} To change your time, book again with the same email.</p></div>;
   return <form onSubmit={submit} className="booking-form">
-    <div className="slot-heading"><div><span className="section-label">PICK A TIME</span><h2>When works for you?</h2><p>All times are in {zone}.</p></div></div>
-    <div className="weekdays" aria-label="Days of the week">{days.map((day) => <button type="button" key={day} className={activeDay === day ? "weekday active" : "weekday"} onClick={() => setActiveDay(day)} aria-pressed={activeDay === day} disabled={!openSlots.some((item) => item.startsWith(`${day}|`))}><strong>{shortDay(day).split(",")[0]}</strong><small>{shortDay(day).split(", ")[1]}</small><span>{slot.startsWith(`${day}|`) ? "✓" : ""}</span></button>)}</div><div className="slot-grid">{openSlots.filter((item) => item.startsWith(`${activeDay}|`)).map((item) => <button className={slot === item ? "slot selected" : "slot"} type="button" key={item} onClick={() => setSlot(item)} aria-pressed={slot === item}>{formatTime(item.slice(11))}<span>{slot === item ? "✓" : "+"}</span></button>)}</div>
-    <div className="field-pair"><label>YOUR NAME<input value={name} onChange={(e) => setName(e.target.value)} placeholder="First and last name" required maxLength={80} /></label><label>EMAIL ADDRESS<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required /></label></div>
+    <div className="slot-heading"><div><h2>Choose a time</h2><p>Times are shown in {zone}.</p></div></div>
+    <div className="weekdays" aria-label="Days of the week">{days.map((day) => <button type="button" key={day} className={activeDay === day ? "weekday active" : "weekday"} onClick={() => setActiveDay(day)} aria-pressed={activeDay === day} aria-label={formatDate(day)} disabled={!openSlots.some((item) => item.startsWith(`${day}|`))}><small>{shortDay(day).split(",")[0]}</small><strong>{Number(day.slice(8))}</strong><span>{slot.startsWith(`${day}|`) ? "✓" : ""}</span></button>)}</div><div className="slot-grid">{openSlots.filter((item) => item.startsWith(`${activeDay}|`)).map((item) => <button className={slot === item ? "slot selected" : "slot"} type="button" key={item} onClick={() => setSlot(item)} aria-pressed={slot === item}>{formatTime(item.slice(11))}<span>{slot === item ? "✓" : "+"}</span></button>)}</div>
+    <div className="field-pair"><label>Name<input value={name} onChange={(e) => setName(e.target.value)} placeholder="First and last name" required maxLength={80} autoComplete="name" /></label><label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required autoComplete="email" /></label></div>
     {error && <p className="form-error" role="alert">{error}</p>}
-    <button className="primary-button" disabled={busy || !slot}>{busy ? "Booking…" : slot ? `Book ${shortSlot(slot)}` : "Choose a time to book"}<span>↗</span></button>
-    <p className="form-footnote">Already booked? Book again with the same email to move your meeting.</p>
+    <button className="primary-button" disabled={busy || !slot}>{busy ? "Booking…" : slot ? `Book ${shortSlot(slot)}` : "Select a time"}<span>↗</span></button>
+    <p className="form-footnote">Already booked? Book again with the same email to change your time.</p>
   </form>;
 }

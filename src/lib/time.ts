@@ -61,3 +61,9 @@ export function shortSlot(slot: string) {
   const [date, time] = slot.split("|");
   return `${shortDay(date)} at ${formatTime(time)}`;
 }
+
+export function formatWeek(start: string) {
+  const end = weekDates(start)[6];
+  const [startYear, endYear] = [start.slice(0, 4), end.slice(0, 4)];
+  return startYear === endYear ? `${shortDay(start)} – ${shortDay(end)}, ${endYear}` : `${shortDay(start)}, ${startYear} – ${shortDay(end)}, ${endYear}`;
+}
