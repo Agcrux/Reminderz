@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Reminderz — Get everyone together",
-  description: "A simple way to find a time that works for your whole group.",
+  title: "Reminderz — Share your week, get booked",
+  description: "Share your availability for the week and let people book a Zoom meeting with you.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

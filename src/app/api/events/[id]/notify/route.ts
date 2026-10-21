@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { getEvent, getParticipants } from "@/lib/db";
-import { sendFinalEmails, sendIndividualEmails } from "@/lib/email";
+import { getBookings, getEvent } from "@/lib/db";
+import { sendInvitation } from "@/lib/email";
 
-const notifySchema = z.object({ token: z.string(), participantId: z.uuid().optional() });
+const notifySchema = z.object({ token: z.string(), bookingId: z.uuid() });
 
 export async function POST(request: Request, context: RouteContext<"/api/events/[id]/notify">) {
   try {
@@ -11,18 +11,12 @@ export async function POST(request: Request, context: RouteContext<"/api/events/
     if (!parsed.success) return Response.json({ error: "Invalid request." }, { status: 400 });
     const event = await getEvent(id);
     if (!event || event.manage_token !== parsed.data.token) return Response.json({ error: "Organizer link not found." }, { status: 404 });
-    const participants = await getParticipants(id);
-    const guestUrl = `${new URL(request.url).origin}/e/${id}`;
-    if (event.mode === "group" && event.finalized_time && !parsed.data.participantId) {
-      await sendFinalEmails(event, participants, guestUrl);
-    } else if (event.mode === "individual" && parsed.data.participantId) {
-      const participant = participants.find((p) => p.id === parsed.data.participantId && p.confirmed_time);
-      if (!participant) return Response.json({ error: "Meeting not found." }, { status: 404 });
-      await sendIndividualEmails(event, participant, guestUrl);
-    } else return Response.json({ error: "This meeting has not been scheduled." }, { status: 400 });
+    const booking = (await getBookings(id)).find((b) => b.id === parsed.data.bookingId);
+    if (!booking) return Response.json({ error: "Booking not found." }, { status: 404 });
+    await sendInvitation(event, booking, `${new URL(request.url).origin}/e/${id}`);
     return Response.json({ ok: true });
   } catch (error) {
-    console.error("Reminder email failed", error);
+    console.error("Invitation email failed", error);
     return Response.json({ error: "Email delivery failed. Check Resend settings and try again." }, { status: 502 });
   }
 }

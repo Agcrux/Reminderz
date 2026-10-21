@@ -6,7 +6,7 @@ export default function Home() {
   return <main className="site-shell">
     <header className="topbar"><Link className="brand" href="/"><span className="brand-icon">✳</span> reminderz<span className="brand-dot">.</span></Link></header>
     <section className="home-form">
-      <div className="form-card"><h1>Create an event</h1><p>Set your availability for one Monday–Sunday week.</p><CreateEvent emailReady={emailReady} /></div>
+      <div className="form-card"><h1>Share your week</h1><p>Choose your free times for one Monday–Sunday week and add your Zoom link. Anyone with your link can book a meeting with you.</p><CreateEvent emailReady={emailReady} /></div>
     </section>
     <footer>© {new Date().getFullYear()} reminderz</footer>
   </main>;

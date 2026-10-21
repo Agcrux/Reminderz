@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { isValidSlot, weekStart } from "@/lib/time";
+import { isValidSlot, weekStart, zonedNow } from "@/lib/time";
 
 const createSchema = z.object({
   title: z.string().trim().min(3).max(100),
@@ -9,7 +9,7 @@ const createSchema = z.object({
   timezone: z.string().min(1).max(80),
   organizerName: z.string().trim().min(1).max(80),
   organizerEmail: z.email().max(254),
-  mode: z.enum(["group", "individual"]),
+  meetingLink: z.httpUrl().max(500),
   organizerSlots: z.array(z.string()).min(1).max(336),
   website: z.string().max(0).optional(),
 });
@@ -20,17 +20,14 @@ export async function POST(request: Request) {
       return Response.json({ error: "Email setup is still in progress. Please try again soon." }, { status: 503 });
     }
     const parsed = createSchema.safeParse(await request.json());
-    if (!parsed.success) return Response.json({ error: "Please check the event details." }, { status: 400 });
+    if (!parsed.success) return Response.json({ error: parsed.error.issues.some((issue) => issue.path[0] === "meetingLink") ? "Enter your full Zoom link, starting with https://." : "Please check the event details." }, { status: 400 });
     const input = parsed.data;
     if (weekStart(input.date) !== input.date || input.organizerSlots.some((slot) => !isValidSlot(slot, input.date))) return Response.json({ error: "Choose valid times within a Monday–Sunday week." }, { status: 400 });
-    try { new Intl.DateTimeFormat("en-US", { timeZone: input.timezone }); }
+    let today: string;
+    try { today = zonedNow(input.timezone).slice(0, 10); }
     catch { return Response.json({ error: "Choose a valid time zone." }, { status: 400 }); }
     const day = new Date(`${input.date}T12:00:00Z`);
-    const now = new Date();
-    const parts = new Intl.DateTimeFormat("en-US", { timeZone: input.timezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
-    const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-    const today = `${value("year")}-${value("month")}-${value("day")}`;
-    if (input.organizerSlots.some((slot) => slot.slice(0, 10) < today) || day.getTime() > now.getTime() + 366 * 24 * 60 * 60 * 1000) {
+    if (input.organizerSlots.some((slot) => slot.slice(0, 10) < today) || day.getTime() > Date.now() + 366 * 24 * 60 * 60 * 1000) {
       return Response.json({ error: "Choose a date within the next year." }, { status: 400 });
     }
 
@@ -38,8 +35,8 @@ export async function POST(request: Request) {
     const token = randomBytes(32).toString("base64url");
     const sql = db();
     const organizerSlots = [...new Set(input.organizerSlots)].sort();
-    await sql`INSERT INTO events (id, title, event_date, timezone, organizer_name, organizer_email, mode, organizer_slots, manage_token)
-      VALUES (${id}, ${input.title}, ${input.date}, ${input.timezone}, ${input.organizerName}, ${input.organizerEmail}, ${input.mode}, ${JSON.stringify(organizerSlots)}::jsonb, ${token})`;
+    await sql`INSERT INTO events (id, title, event_date, timezone, organizer_name, organizer_email, meeting_link, organizer_slots, manage_token)
+      VALUES (${id}, ${input.title}, ${input.date}, ${input.timezone}, ${input.organizerName}, ${input.organizerEmail}, ${input.meetingLink}, ${JSON.stringify(organizerSlots)}::jsonb, ${token})`;
     return Response.json({ id, token }, { status: 201 });
   } catch (error) {
     console.error("Create event failed", error);

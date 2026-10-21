@@ -3,22 +3,20 @@ import { neon } from "@neondatabase/serverless";
 export type Event = {
   id: string;
   title: string;
-  event_date: string | Date;
+  event_date: string;
   timezone: string;
   organizer_name: string;
   organizer_email: string;
-  mode: "group" | "individual";
+  meeting_link: string;
   organizer_slots: string[];
   manage_token: string;
-  finalized_time: string | null;
 };
 
-export type Participant = {
+export type Booking = {
   id: string;
   name: string;
   email: string;
-  slots: string[];
-  confirmed_time: string | null;
+  slot: string;
 };
 
 export function db() {
@@ -28,12 +26,13 @@ export function db() {
 
 export async function getEvent(id: string) {
   const sql = db();
-  const rows = await sql`SELECT * FROM events WHERE id = ${id} LIMIT 1`;
+  const rows = await sql`SELECT id, title, event_date::text AS event_date, timezone, organizer_name, organizer_email, meeting_link, organizer_slots, manage_token
+    FROM events WHERE id = ${id} LIMIT 1`;
   return (rows[0] as Event | undefined) ?? null;
 }
 
-export async function getParticipants(eventId: string) {
+export async function getBookings(eventId: string) {
   const sql = db();
-  const rows = await sql`SELECT id, name, email, slots, confirmed_time FROM participants WHERE event_id = ${eventId} ORDER BY created_at ASC`;
-  return rows as Participant[];
+  const rows = await sql`SELECT id, name, email, slot FROM bookings WHERE event_id = ${eventId} ORDER BY slot ASC, created_at ASC`;
+  return rows as Booking[];
 }
